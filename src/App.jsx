@@ -1,3 +1,84 @@
+import "./App.css";
+import Navbar, { Search, SearchResult, Favorites } from "./components/Navbar";
+import CarecterList from "./components/CharacterList";
+import CarecterDetail from "./components/CharacterDetail";
+import { useState } from "react";
+import { Toaster } from "react-hot-toast";
+import useCharacters from "./hooks/useCharacters";
+import useLocalStorage from "./hooks/useLocalStorage";
+import CharacterDetail from "./components/CharacterDetail";
+import CharacterList from "./components/CharacterList";
+
+function App() {
+  const [query, setQuery] = useState("");
+
+  const [selectedId, setSelectedId] = useState(null);
+
+  // * custom hook:**
+  const { isLoading, characters } = useCharacters(
+    // ?name: مقدار اختیاری میباشد که میگوید از کارکتر ها اسمشون که با این چیزی که کاربر وارد کرده یکی است،کوئری
+    "https://rickandmortyapi.com/api/character/?name",
+    query
+  );
+
+  // * custom hook:**
+  const [favourites, setFavourites] = useLocalStorage("FAVOURITES", []);
+
+  const handleSelectCharacter = (id) => {
+    setSelectedId((prevId) => (prevId === id ? null : id));
+  };
+
+  const handleAddFavourites = (char) => {
+    setFavourites((prevFav) => [...prevFav, char]);
+  };
+
+  const handleDeleteFavourite = (id) => {
+    setFavourites((prevFav) => prevFav.filter((fav) => fav.id !== id));
+  };
+
+  const isAddToFavourites = favourites
+    .map((fav) => fav.id)
+    .includes(selectedId);
+
+  return (
+    <div className="app">
+      <Toaster />
+      {/* component composition */}
+      {/* هدف حذف پراپ درلینگ، حذف پاس دادن پراپ اضافی */}
+      <Navbar>
+        <Search query={query} setQuery={setQuery} />
+        <SearchResult numOfResult={characters.length} />
+        <Favorites
+          favourites={favourites}
+          onDeleteFavourite={handleDeleteFavourite}
+        />
+      </Navbar>
+      {/* component composition */}
+      <Main>
+        <CharacterList
+          selectedId={selectedId}
+          characters={characters}
+          isLoading={isLoading}
+          onSelectCharacter={handleSelectCharacter}
+        />
+        <CharacterDetail
+          selectedId={selectedId}
+          handleAddFavourites={handleAddFavourites}
+          isAddToFavourites={isAddToFavourites}
+        />
+      </Main>
+    </div>
+  );
+}
+
+export default App;
+
+function Main({ children }) {
+  return <div className="main">{children}</div>;
+}
+
+// ------------------------------------------------------------------
+
 // ! then & catch:
 // useEffect(() => {
 //   setIsLoading(true);
@@ -111,83 +192,3 @@
 // useEffect(() => {
 //   localStorage.setItem("FAVOURITES", JSON.stringify(favourites));
 // }, [favourites]);
-
-// ------------------------------------------------------------------
-import "./App.css";
-import Navbar, { Search, SearchResult, Favorites } from "./components/Navbar";
-import CarecterList from "./components/CharacterList";
-import CarecterDetail from "./components/CharacterDetail";
-import { useState } from "react";
-import { Toaster } from "react-hot-toast";
-import useCharacters from "./hooks/useCharacters";
-import useLocalStorage from "./hooks/useLocalStorage";
-import CharacterDetail from "./components/CharacterDetail";
-import CharacterList from "./components/CharacterList";
-
-function App() {
-  const [query, setQuery] = useState("");
-
-  const [selectedId, setSelectedId] = useState(null);
-
-  // * custom hook:**
-  const { isLoading, characters } = useCharacters(
-    // ?name: مقدار اختیاری میباشد که میگوید از کارکتر ها اسمشون که با این چیزی که کاربر وارد کرده یکی است،کوئری
-    "https://rickandmortyapi.com/api/character/?name",
-    query
-  );
-
-  // * custom hook:**
-  const [favourites, setFavourites] = useLocalStorage("FAVOURITES", []);
-
-  const handleSelectCharacter = (id) => {
-    setSelectedId((prevId) => (prevId === id ? null : id));
-  };
-
-  const handleAddFavourites = (char) => {
-    setFavourites((prevFav) => [...prevFav, char]);
-  };
-
-  const handleDeleteFavourite = (id) => {
-    setFavourites((prevFav) => prevFav.filter((fav) => fav.id !== id));
-  };
-
-  const isAddToFavourites = favourites
-    .map((fav) => fav.id)
-    .includes(selectedId);
-
-  return (
-    <div className="app">
-      <Toaster />
-      {/* component composition */}
-      {/* هدف حذف پراپ درلینگ، حذف پاس دادن پراپ اضافی */}
-      <Navbar>
-        <Search query={query} setQuery={setQuery} />
-        <SearchResult numOfResult={characters.length} />
-        <Favorites
-          favourites={favourites}
-          onDeleteFavourite={handleDeleteFavourite}
-        />
-      </Navbar>
-      {/* component composition */}
-      <Main>
-        <CharacterList
-          selectedId={selectedId}
-          characters={characters}
-          isLoading={isLoading}
-          onSelectCharacter={handleSelectCharacter}
-        />
-        <CharacterDetail
-          selectedId={selectedId}
-          handleAddFavourites={handleAddFavourites}
-          isAddToFavourites={isAddToFavourites}
-        />
-      </Main>
-    </div>
-  );
-}
-
-export default App;
-
-function Main({ children }) {
-  return <div className="main">{children}</div>;
-}
