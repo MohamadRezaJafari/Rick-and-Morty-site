@@ -3,40 +3,17 @@ import { ArrowUpCircleIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 import Loading from "./Loading";
 import toast from "react-hot-toast";
+import useCharacterAndEpisodes from "../hooks/useCharacterAndEpisodes";
 
 function CharacterDetail({
   selectedId,
   handleAddFavourites,
   isAddToFavourites,
 }) {
-  const [character, setCharacter] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [episodes, setEpisodes] = useState([]);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        const { data } = await axios.get(
-          `https://rickandmortyapi.com/api/character/${selectedId}`
-        );
-        setCharacter(data);
-          // دیتای بالا که دریافت کردیم پراپرتی اپیزودش را مپ میزنیم بر اساس اسلش جدا میکنیم و خونه آخرش را بر میداریم
-        const episodesId = data.episode.map((e) => e.split("/").at(-1));
-        const { data: episodeData } = await axios.get(
-          `https://rickandmortyapi.com/api/episode/${episodesId}`
-        );
-        // بعضی از دیتاها آرایه ای از آبجکتا هستند و برای حل خطا تبدیل به استرینگ بعد متد فلت اینو به آرایه یکدست تبدیل میکند
-        setEpisodes([episodeData].flat().slice(0, 6));
-      } catch (error) {
-        toast.error(error.response.data.error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    if (selectedId) fetchData();
-  }, [selectedId]);
+  // * custom hook:**
+  const { character, isLoading, episodes } =
+    useCharacterAndEpisodes(selectedId);
 
   if (isLoading)
     return (
